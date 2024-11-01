@@ -171,3 +171,36 @@ json-server --watch db.json
 - El filtrado de la tabla debe realizarse en el componente, no en el servidor
 
 
+
+
+
+
+
+- Implementar validación:
+  - El pedido debe tener al menos un producto
+  - La cantidad total de productos no debe exceder 10 unidades
+- Mostrar mensajes de error apropiados
+
+#### 2.2 Validación Sincrónica Personalizada
+
+- Implementar un validador sincrónico personalizado para el FormArray de productos que:
+  - Valide que no existan productos duplicados en el pedido
+  - Debe implementarse usando la siguiente estructura:
+
+1. La validación debe:
+  - Activarse cada vez que se agrega o modifica un producto en el FormArray
+  - Retornar el mensaje si hay productos repetidos
+
+#### 2.3 Validación Asincrónica del Email
+
+- Implementar un validador asincrónico personalizado para el campo email que:
+  - Utilice el endpoint GET /orders?email={email} para verificar el historial de pedidos
+  - Valide que el cliente no haya realizado más de 3 pedidos en las últimas 24 horas
+
+##### Requerimientos de la validación:
+
+1. La validación debe:
+  - Activarse cuando el usuario modifica el campo email
+  - Retornar el error si se excede el límite
+  - Manejar correctamente los casos de error de la API
+  - Ignorar la validación si el campo está vacío

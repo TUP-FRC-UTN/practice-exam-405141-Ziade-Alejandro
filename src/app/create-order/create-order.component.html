@@ -1,18 +1,37 @@
 <div class="container mt-3">
   <h1>Create New Order</h1>
   <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+<!--nombre e email-->
     <div class="row mt-3">
       <div class="col-6">
         <div class="mb-3">
           <label for="name" class="form-label">Nombre</label>
-          <input type="text" class="form-control" id="name" formControlName="nombre">
+          <input type="text" class="form-control" id="name" formControlName="nombre"
+                 [ngClass]="{'is-invalid': orderForm.controls['nombre'].invalid && !orderForm.controls['nombre'].untouched, 'is-valid':orderForm.controls['nombre'].valid }">
+          @if(orderForm.controls['nombre'].invalid&& !orderForm.controls['nombre'].untouched){
+            @if (orderForm.controls['nombre'].errors?.['required']){
+              <div class="text-danger">this is the heart of the world</div>
+            }
+            @if (orderForm.controls['nombre'].errors?.['minlength']){
+              <div class="text-danger">for one was made to satisfied the other</div>
+            }
+          }
         </div>
 
       </div>
       <div class="col-6">
         <div class="mb-3">
           <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" aria-describedby="emailHelp" formControlName="email">
+          <input type="email" class="form-control" id="email" aria-describedby="emailHelp" formControlName="email"
+          [ngClass]="{'is-invalid': orderForm.controls['email'].invalid && !orderForm.controls['email'].untouched, 'is-valid':orderForm.controls['email'].valid }">
+          @if(orderForm.controls['email'].invalid&& !orderForm.controls['email'].untouched){
+            @if (orderForm.controls['email'].errors?.['required']){
+              <div class="text-danger">this is the heart of the world</div>
+            }
+            @if (orderForm.controls['email'].errors?.['email']){
+              <div class="text-danger">for one was made to satisfied the other</div>
+            }
+          }
         </div>
       </div>
     </div>
@@ -23,46 +42,65 @@
         <h3>Productos</h3>
         <button type="button" class="btn btn-primary" (click)="addProduct()">+</button>
       </div>
-      <div class="card-body row">
-        <!--        tengo que hacer un for para que pueda cargar varios productos-->
 
 
-        <div class="col-3">
-          <div class="mb-3">
-            <label for="producto" class="form-label">Producto</label>
-            <select class="form-select" aria-label="Default select example" id="producto">
-              @for(pro of products;track $index){
-                <option>{{pro.name}}</option>
-              }
-            </select>
-          </div>
-        </div>
-        <div class="col-2">
-          <div class="mb-3">
-            <label for="cantidad" class="form-label">Cantidad</label>
-            <input type="number" class="form-control" id="cantidad" formControlName="cantidad">
-
-          </div>
-        </div>
-        <div class="col-2">
-          <div class="mb-3">
-            <label for="Precio" class="form-label">Precio</label>
-            <input type="text" class="form-control" id="Precio" disabled>
-          </div>
-        </div>
-        <div class="col-2">
-          <div class="mb-3">
-            <label for="Stock" class="form-label">Stock</label>
-            <input type="text" class="form-control" id="Stock" disabled>
-          </div>
-        </div>
-        <div class="col-3">
-          <div class="mb-3">
-            <button type="button" class="btn btn-danger" (click)="removeProduct(i)">X</button>
-          </div>
-        </div>
+      <div class="card-body " formArrayName="productos">
+        @for (product of productos.controls; track $index) {
 
 
+          <div class="row" [formGroupName]="$index">
+
+            <!--        tengo que hacer un for para que pueda cargar varios productos-->
+
+
+            <!--    producto select    -->
+            <div class="col-3">
+              <div class="mb-3">
+                <label for="producto" class="form-label">Producto</label>
+                <select class="form-select" aria-label="Default select example" id="producto" formControlName="producto"
+                        (change)="updateProductDetails($index)">
+                  @for (pro of prods; track $index) {
+                    <option [value]="pro.id">{{ pro.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!--        cantidad que se pone-->
+            <div class="col-2">
+              <div class="mb-3">
+                <label for="cantidad" class="form-label">Cantidad</label>
+                <input type="number" class="form-control" id="cantidad" formControlName="cantidad">
+
+              </div>
+            </div>
+
+            <!--        precio de los productos, no se modifica-->
+            <div class="col-2">
+              <div class="mb-3">
+                <label for="Precio" class="form-label">Precio</label>
+                <input type="text" class="form-control" id="Precio" formControlName="precio">
+              </div>
+            </div>
+            <!--        stock de los productos no se modifica-->
+            <div class="col-2">
+              <div class="mb-3">
+                <label for="Stock" class="form-label">Stock</label>
+                <input type="text" class="form-control" id="Stock" formControlName="stock">
+              </div>
+            </div>
+            <!--        borrar, linea-->
+            <div class="col-3">
+              <div class="mb-3">
+                <button type="button" class="btn btn-danger" (click)="removeProduct($index)">X</button>
+              </div>
+            </div>
+
+
+          </div>
+
+
+        }
       </div>
     </div>
 
@@ -70,11 +108,17 @@
     <div class="card mt-3">
       <div class="card-header d-flex justify-content-between">
         <h3>Productos Seleccionados</h3>
-
       </div>
       <div class="card-body">
         <ul>
-          <li></li>
+          <!--     meter un for aca que muestre el nombre de cada producto que se selecciona arriva     -->
+          @for (producto of selectedProducts; track $index) {
+
+            <li>{{ producto.name }} - Cantidad: {{ producto.quantity }} - Precio unitario: ${{ producto.price }} -
+              stock: {{ producto.stock }} - subtotal: {{ producto.quantity * producto.price | currency }}
+            </li>
+
+          }
         </ul>
       </div>
     </div>
@@ -85,16 +129,16 @@
 
         </div>
         <div>
-          <h5>Total></h5>
+          <h5>Total:</h5>
         </div>
         <div class="p-2">
-          $0
+          ${{totalPrice| currency}}
         </div>
       </div>
     </div>
     <!--  boton  -->
     <div class="d-flex justify-content-end">
-      <button type="submit" class="btn-primary btn mt-3"> Create Order</button>
+      <button type="submit" class="btn-primary btn mt-3" [disabled]="!orderForm.valid"> Create Order</button>
     </div>
   </form>
 </div>

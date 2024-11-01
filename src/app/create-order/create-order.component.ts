@@ -1,65 +1,88 @@
 import {Component, inject} from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {Product} from "../product";
-import {NgForOf} from "@angular/common";
+import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {Product} from "../models/product";
+import {CurrencyPipe, NgClass, NgForOf} from "@angular/common";
+import {ProductsService} from "../service/products.service";
 
 @Component({
   selector: 'app-create-order',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    NgForOf
+    NgForOf,
+    NgClass,
+    CurrencyPipe,
   ],
   templateUrl: './create-order.component.html',
   styleUrl: './create-order.component.css'
 })
 export class CreateOrderComponent {
-  orderForm!: FormGroup;
+  //form group (contiene los controles)
+  orderForm: FormGroup = new FormGroup({
+    //form control es el objeto que tenes que traer para validar
+    nombre: new FormControl('the heart', [Validators.required, Validators.minLength(3)]),
+    email: new FormControl('loveLost@parahumans.wiki.com', [Validators.required, Validators.email]),
+    //es un array de controles
+    productos: new FormArray([])
+  });
+  //variables, contiene la info de la api
+  prods: Product[] = [];
 
-  products: Product[]=[];
-  test:number[]=[1,2,3,4,6]
-
+//services
   private fb = inject(FormBuilder);
+  private readonly service= inject(ProductsService)
 
+
+//init
   ngOnInit() {
-    this.orderForm = this.fb.group({
-      nombre:['', Validators.required, Validators.minLength(3)],
-      email:['', Validators.required, Validators.email],
-      productos: this.fb.array([])
-    })
-
     this.loadProducts()
+
+    // this.productos.setValidators(this.validateUniqueProducts.bind(this));
   }
 
-  get productos():FormArray {
-    return this.orderForm.get('Productos') as FormArray;
+//methods
+  //te trae el form array de productos que esta en el form group y te lo trae como form array
+  get productos(): FormArray {
+    return this.orderForm.get('productos') as FormArray;
   }
 
+  // trae los productos eleguidos por el usuario y los mapea a un objeto que tiene esos atributos
+  get selectedProducts() {
+    return this.productos.controls.map( control => ({
+      //filtra por los productos que tengan la misma id, y les trae el nombre que es lo unico que tienen prods select que es igual que form array produtos
+      name: this.prods.find(pro=> pro.id===control.get('producto')?.value)?.name,
+      quantity: control.get('cantidad')?.value,
+      price: control.get('precio')?.value,
+      stock: control.get('stock')?.value,
+    }))
+  }
+
+  get totalPrice() {
+    return this.selectedProducts.reduce((total,product)=> total + (product.price * product.quantity), 0)
+  }
+
+
+  /**
+   * primero genera un nuevo form group que tiene 4 controles, estos son los valoers que se muestran en el html
+   * luego lo empuja a el form array que esta en el form group de arriba, orderForm
+   */
   addProduct() {
-    const productGroup = this.fb.group({
-      product:[null, Validators.required],
-      cantidad:[1,[Validators.required, Validators.min(1)]],
-      precio: [{value:0,disabled:true}],
-      sotck:[{value:0,disabled:true}]
+    const productGroup = new FormGroup({
+      producto: new FormControl('',Validators.required),//['', Validators.required],
+      cantidad: new FormControl(1,[Validators.required, Validators.min(1)]),//[1, [Validators.required, Validators.min(1)]],
+      precio: new FormControl({value:0,disabled:true}), //[{value: 0, disabled: true}],
+      stock: new FormControl({value:0,disabled:true})
     })
 
-    productGroup.get('product')?.valueChanges.subscribe((productID) => {
 
-      const product = this.products.find(product => product.id === productID)
 
-      if (product) {
-        productGroup.get('precio')?.setValue(product.price)
-        productGroup.get('sotck')?.setValue(product.stock)
-      }
-    })
-    this.productos.push(productGroup)
+    this.productos.push(productGroup);
   }
 
-  removeProduct(index:number) {
+  //saca en el index el form group de form array
+  removeProduct(index: number) {
     this.productos.removeAt(index)
   }
-
-
 
 
   onSubmit() {
@@ -72,5 +95,34 @@ export class CreateOrderComponent {
 
   private loadProducts() {
     //api implementation
+    this.service.getProducts().subscribe(data=>{
+      this.prods = data
+    })
+  }
+
+  updateProductDetails($index: number) {
+    // busca primero el id que tiene en el html de producto como valor en las opciones
+    const selectedProductId = this.productos.at($index).get('producto')?.value;
+    //luego setea el producto usando el id para buscarlo
+    const selectedProduct = this.prods.find(prod => prod.id == selectedProductId);
+
+
+
+
+
+    if (selectedProduct) {// si el producto seteado no es nulo
+      //se setea al los from group dentro del array los valores del producto en el api de precio y stock
+      this.productos.at($index).get('precio')?.setValue(selectedProduct.price)
+      this.productos.at($index).get('stock')?.setValue(selectedProduct.stock)
+    }
+  }
+
+  //validaciones personalizadas
+
+
+  validateUniqueProducts(formArray: FormArray) {
+    const productIds = formArray.controls.map(control => control.get('producto')?.value);
+    const hasDuplicates = productIds.some((id, index) => productIds.indexOf(id) !== index);
+    return hasDuplicates ? { duplicateProduct: 'No se permiten productos duplicados.' } : null;
   }
 }

@@ -11,21 +11,26 @@ export class ProductsService {
 
   // constructor() { }
 
-  private api: string = 'http://localhost:3000/products'
+  private apiProducts: string = 'http://localhost:3000/products'
+  private apiorders: string = 'http://localhost:3000/orders'
 
 
   private readonly http = inject(HttpClient)
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.api)
+    return this.http.get<Product[]>(this.apiProducts)
   }
 
-  checkOrderLimit(email: string): Observable<boolean> {
-    return this.http.get<Order[]>(`http://localhost:3000/orders?email=${email}`).pipe(
-      map(orders => {
-        const recentOrders = orders.filter(order => new Date(order.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000));
-        return recentOrders.length >= 3;
-      })
-    );
+  // checkOrderLimit(email: string): Observable<boolean> {
+  //   return this.http.get<Order[]>(`http://localhost:3000/orders?email=${email}`).pipe(
+  //     map(orders => {
+  //       const recentOrders = orders.filter(order => new Date(order.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000));
+  //       return recentOrders.length >= 3;
+  //     })
+  //   );
+  // }
+
+  getOrders() : Observable<Order[]> {
+    return this.http.get<Order[]>(this.apiorders)
   }
 }

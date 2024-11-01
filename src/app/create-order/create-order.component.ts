@@ -1,9 +1,15 @@
 import {Component, inject} from '@angular/core';
-import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {
+  AbstractControl, AsyncValidatorFn,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule, ValidationErrors,
+  Validators
+} from "@angular/forms";
 import {Product} from "../models/product";
 import {CurrencyPipe, NgClass, NgForOf} from "@angular/common";
 import {ProductsService} from "../service/products.service";
-
 @Component({
   selector: 'app-create-order',
   standalone: true,
@@ -29,7 +35,7 @@ export class CreateOrderComponent {
   prods: Product[] = [];
 
 //services
-  private fb = inject(FormBuilder);
+//   private fb = inject(FormBuilder);
   private readonly service= inject(ProductsService)
 
 
@@ -37,7 +43,6 @@ export class CreateOrderComponent {
   ngOnInit() {
     this.loadProducts()
 
-    // this.productos.setValidators(this.validateUniqueProducts.bind(this));
   }
 
 //methods
@@ -68,9 +73,9 @@ export class CreateOrderComponent {
    */
   addProduct() {
     const productGroup = new FormGroup({
-      producto: new FormControl('',Validators.required),//['', Validators.required],
-      cantidad: new FormControl(1,[Validators.required, Validators.min(1)]),//[1, [Validators.required, Validators.min(1)]],
-      precio: new FormControl({value:0,disabled:true}), //[{value: 0, disabled: true}],
+      producto: new FormControl('',Validators.required),
+      cantidad: new FormControl(1,[Validators.required, Validators.min(1)]),
+      precio: new FormControl({value:0,disabled:true}),
       stock: new FormControl({value:0,disabled:true})
     })
 
@@ -85,6 +90,7 @@ export class CreateOrderComponent {
   }
 
 
+  //todo hacer el post de aca
   onSubmit() {
     if (this.orderForm.valid) {
       console.log(this.orderForm.value);
@@ -107,9 +113,6 @@ export class CreateOrderComponent {
     const selectedProduct = this.prods.find(prod => prod.id == selectedProductId);
 
 
-
-
-
     if (selectedProduct) {// si el producto seteado no es nulo
       //se setea al los from group dentro del array los valores del producto en el api de precio y stock
       this.productos.at($index).get('precio')?.setValue(selectedProduct.price)
@@ -120,9 +123,4 @@ export class CreateOrderComponent {
   //validaciones personalizadas
 
 
-  validateUniqueProducts(formArray: FormArray) {
-    const productIds = formArray.controls.map(control => control.get('producto')?.value);
-    const hasDuplicates = productIds.some((id, index) => productIds.indexOf(id) !== index);
-    return hasDuplicates ? { duplicateProduct: 'No se permiten productos duplicados.' } : null;
-  }
 }

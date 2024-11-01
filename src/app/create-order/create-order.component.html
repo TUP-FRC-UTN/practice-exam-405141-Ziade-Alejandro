@@ -1,0 +1,100 @@
+<div class="container mt-3">
+  <h1>Create New Order</h1>
+  <form [formGroup]="orderForm" (ngSubmit)="onSubmit()">
+    <div class="row mt-3">
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="name" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="name" formControlName="nombre">
+        </div>
+
+      </div>
+      <div class="col-6">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" aria-describedby="emailHelp" formControlName="email">
+        </div>
+      </div>
+    </div>
+
+    <!--  productos-->
+    <div class="card mt-3">
+      <div class="card-header d-flex justify-content-between">
+        <h3>Productos</h3>
+        <button type="button" class="btn btn-primary" (click)="addProduct()">+</button>
+      </div>
+      <div class="card-body row">
+        <!--        tengo que hacer un for para que pueda cargar varios productos-->
+
+
+        <div class="col-3">
+          <div class="mb-3">
+            <label for="producto" class="form-label">Producto</label>
+            <select class="form-select" aria-label="Default select example" id="producto">
+              @for(pro of products;track $index){
+                <option>{{pro.name}}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="col-2">
+          <div class="mb-3">
+            <label for="cantidad" class="form-label">Cantidad</label>
+            <input type="number" class="form-control" id="cantidad" formControlName="cantidad">
+
+          </div>
+        </div>
+        <div class="col-2">
+          <div class="mb-3">
+            <label for="Precio" class="form-label">Precio</label>
+            <input type="text" class="form-control" id="Precio" disabled>
+          </div>
+        </div>
+        <div class="col-2">
+          <div class="mb-3">
+            <label for="Stock" class="form-label">Stock</label>
+            <input type="text" class="form-control" id="Stock" disabled>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="mb-3">
+            <button type="button" class="btn btn-danger" (click)="removeProduct(i)">X</button>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+
+    <!--  productos seleccionados-->
+    <div class="card mt-3">
+      <div class="card-header d-flex justify-content-between">
+        <h3>Productos Seleccionados</h3>
+
+      </div>
+      <div class="card-body">
+        <ul>
+          <li></li>
+        </ul>
+      </div>
+    </div>
+    <!--total-->
+    <div class="card mt-3">
+      <div class=" d-flex justify-content-between">
+        <div>
+
+        </div>
+        <div>
+          <h5>Total></h5>
+        </div>
+        <div class="p-2">
+          $0
+        </div>
+      </div>
+    </div>
+    <!--  boton  -->
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn-primary btn mt-3"> Create Order</button>
+    </div>
+  </form>
+</div>

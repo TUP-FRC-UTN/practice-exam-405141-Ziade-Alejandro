@@ -63,7 +63,13 @@ export class CreateOrderComponent {
   }
 
   get totalPrice() {
-    return this.selectedProducts.reduce((total,product)=> total + (product.price * product.quantity), 0)
+    const total:number = this.selectedProducts.reduce((total,product)=> total + (product.price * product.quantity), 0)
+
+    if (total > 1000){
+      total * 0.9
+    }
+
+    return total
   }
 
 
